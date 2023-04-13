@@ -115,7 +115,13 @@ class Game:
             result = ''
         return result
 
-
+    def newWord(self):
+        self.game_over()
+        return self.word_to_guess
+    
+    def getClue(self,rank):
+        return [self.top(self.word_to_guess,999)[int(rank)]]
+    
     def stats(self):
         return Stats(self.day_num, self.solvers)._asdict()
 
@@ -129,4 +135,6 @@ class Game:
         self.random_word()
         self.save_word()
         self.logger.info(f'Le nouveau mot à deviner est: {self.word_to_guess}')
+        
+        
 
