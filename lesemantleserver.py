@@ -23,20 +23,18 @@ logger.setLevel(logging.INFO)
 # load the model
 model = KeyedVectors.load_word2vec_format(WORD2VEC_MODEL, binary=True, unicode_errors="ignore")
 
-regex= re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+regex= re.compile('[@_!#$%^&*()<>?/\|}{~:\-\s]')
 
 # load the dictionary
 csv_reader = csv.reader(open(LEXIQUE_CSV), delimiter='\t')
-lexique = list(filter(lambda c: ((c[3] == 'NOM' or c[3] == 'ADJ' or c[3] == 'VER') and
-                                    (c[4] == '' or c[4] == 'm') and
+lexique_base = list(filter(lambda c: (len(c[0]) >= 3 and (c[3] == 'NOM' or c[3] == 'ADJ' or c[3] == 'VER') and
                                     (c[5] == '' or c[5] == 's') and
-                                    (float(c[6]) >= 5.0) and
-                                    (c[10] == '' or c[10][:3] == 'inf') and regex.search(c[0]) == None and
+                                    (c[10] == '' or 'inf' in c[10]) and regex.search(c[0]) == None and
                                     (c[0] in model.key_to_index)),
                         csv_reader))
-
-game = Game(lexique, model)
-
+lexique_secret = list(filter(lambda c: (float(c[7]) >= 5.0),lexique_base))
+lexique_attempt = set([word[0] for word in lexique_base])
+game = Game(lexique_secret,lexique_attempt, model)
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 

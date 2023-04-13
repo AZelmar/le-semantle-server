@@ -20,8 +20,9 @@ class Game:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     
-    def __init__(self, lexique, model):
+    def __init__(self, lexique,lexique_words, model):
         self.lexique = lexique
+        self.lexique_words = lexique_words
         self.model = model
 
         if not os.path.exists(WORD_FILE):
@@ -78,17 +79,19 @@ class Game:
 
         if word is not None and word != '':
             try:
-                if word == self.word_to_guess:
-                    # with gensim rank of word with itself is 1 and similarity can be 0.99999994
-                    score = 1.0
-                    rank = 0
-                    self.solvers += 1
+                if word not in self.lexique_words:
+                    error_str = f'Je ne connais pas le mot <i>{word}</i>.'
                 else:
-                    score = float(self.model.similarity(word, self.word_to_guess))
-                    rank = self.model.rank(self.word_to_guess, word)
-
-                
-                percentile = 1000 - rank if rank <= 1000 else None
+                    if word == self.word_to_guess:
+                        # with gensim rank of word with itself is 1 and similarity can be 0.99999994
+                        score = 1.0
+                        rank = 0
+                        self.solvers += 1
+                    else:
+                        score = float(self.model.similarity(word, self.word_to_guess))
+                        rank = self.model.rank(self.word_to_guess, word)
+               
+                    percentile = 1000 - rank if rank <= 1000 else None
             except KeyError:
                 error_str = f'Je ne connais pas le mot <i>{word}</i>.'
         else:
