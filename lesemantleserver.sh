@@ -14,5 +14,5 @@ then
 
     flask run
 else # prod
-    gunicorn -b 0.0.0.0:$PORT lesemantleserver:app
+    gunicorn -b 0.0.0.0:8000 lesemantleserver:app
 fi
