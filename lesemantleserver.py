@@ -77,9 +77,9 @@ def hist():
 
 @app.route('/newWord', methods=['GET'])
 def newWord():
-    return game.newWord()
+    return [game.newWord()]
 
 @app.route('/getClue', methods=['POST'])
 def getClue():
     form = request.form
-    return game.getClue(form.get('rank'))
+    return [game.getClue(form.get('rank'))]

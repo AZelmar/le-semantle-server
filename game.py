@@ -120,7 +120,7 @@ class Game:
         return self.word_to_guess
     
     def getClue(self,rank):
-        return [self.top(self.word_to_guess,999)[int(rank)]]
+        return self.top(self.word_to_guess,999)[int(rank)]
     
     def stats(self):
         return Stats(self.day_num, self.solvers)._asdict()
