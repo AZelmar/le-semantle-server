@@ -33,14 +33,21 @@ lexique_base = list(filter(lambda c: (len(c[0]) >= 3 and (c[3] == 'NOM' or c[3] 
                                     (c[0] in model.key_to_index)),
                         csv_reader))
 lexique_secret = list(filter(lambda c: (float(c[7]) >= 5.0),lexique_base))
-lexique_attempt = set([word[0] for word in lexique_base])
-game = Game(lexique_secret,lexique_attempt, model)
+pool_secret = [word[0] for word in lexique_secret]
+pool_attempt = [word[0] for word in lexique_base]
+pool_attempt_set = set(pool_attempt)
+
+#print(model.most_similar('juste', topn=10,restrict_vocab=50000))
+#print(model.most_similar('juste', topn=10))
+#print(pool_secret[:20])
+#print(pool_attempt[:20])
+#print(len(pool_attempt))
+game = Game(lexique_secret,pool_attempt_set, model)
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
 
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     game.start()
-
 
 def convert_namedtuple_to_dict(nt):
     return dict(filter(lambda item: item[1] is not None, nt._asdict().items()))

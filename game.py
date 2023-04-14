@@ -8,6 +8,7 @@ from collections import OrderedDict
 from collections import namedtuple
 from gensim.models import KeyedVectors
 from apscheduler.schedulers.background import BackgroundScheduler
+from itertools import islice
 
 from environ import *
 
@@ -22,7 +23,7 @@ class Game:
     
     def __init__(self, lexique,lexique_words, model):
         self.lexique = lexique
-        self.lexique_words = lexique_words
+        self.pool_attempt_set = lexique_words
         self.model = model
 
         if not os.path.exists(WORD_FILE):
@@ -79,7 +80,7 @@ class Game:
 
         if word is not None and word != '':
             try:
-                if word not in self.lexique_words:
+                if word not in self.pool_attempt_set:
                     error_str = f'Je ne connais pas le mot <i>{word}</i>.'
                 else:
                     if word == self.word_to_guess:
@@ -102,10 +103,14 @@ class Game:
 
     def top(self, word, topn):
         result = []
-        top = self.model.most_similar(word, topn=topn)
+        top = self.model.most_similar(word, topn=10000)
+        real_rank = 0
         for rank,w in enumerate([(word, 1.0), *top]):
-            result.append((w[0], 1000 - rank, float(w[1] * 100)))
-
+            if w[0] in self.pool_attempt_set:
+                result.append((w[0], 1000 - real_rank, float(w[1] * 100)))
+                real_rank+=1
+            if real_rank >= topn:
+                break
         return result
 
 
@@ -123,7 +128,10 @@ class Game:
         return self.word_to_guess
     
     def getClue(self,rank):
-        return self.top(self.word_to_guess,999)[int(rank)]
+        rank = int(rank) - 1
+        if rank >= 999:
+            return self.top(self.word_to_guess,1000)[999]
+        return self.top(self.word_to_guess,1000)[rank]
     
     def stats(self):
         return Stats(self.day_num, self.solvers)._asdict()
