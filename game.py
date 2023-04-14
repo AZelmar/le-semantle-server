@@ -90,9 +90,12 @@ class Game:
                         self.solvers += 1
                     else:
                         score = float(self.model.similarity(word, self.word_to_guess))
-                        rank = self.model.rank(self.word_to_guess, word)
-               
-                    percentile = 1000 - rank if rank <= 1000 else None
+                        top = {a:[b,c] for a,b,c in self.top(self.word_to_guess,1000)}
+                        print(top)
+                        if word in top.keys():
+                            percentile = top[word][0]
+                        else:
+                            percentile = 0
             except KeyError:
                 error_str = f'Je ne connais pas le mot <i>{word}</i>.'
         else:
