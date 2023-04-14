@@ -95,7 +95,7 @@ class Game:
                         if word in top.keys():
                             percentile = top[word][0]
                         else:
-                            percentile = 0
+                            percentile = None
             except KeyError:
                 error_str = f'Je ne connais pas le mot <i>{word}</i>.'
         else:
