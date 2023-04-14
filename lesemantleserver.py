@@ -28,6 +28,7 @@ regex= re.compile('[@_!#$%^&*()<>?/\|}{~:\-\s]')
 # load the dictionary
 csv_reader = csv.reader(open(LEXIQUE_CSV), delimiter='\t')
 lexique_base = list(filter(lambda c: (len(c[0]) >= 3 and (c[3] == 'NOM' or c[3] == 'ADJ' or c[3] == 'VER') and
+                                      (c[3] != 'ADJ' or (c[3] == 'ADJ' and c[4] == 'm')) and
                                     (c[5] == '' or c[5] == 's') and
                                     (c[10] == '' or 'inf' in c[10]) and regex.search(c[0]) == None and
                                     (c[0] in model.key_to_index)),
