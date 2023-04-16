@@ -4,6 +4,7 @@ import os
 import json
 import random
 import logging
+import time
 from collections import OrderedDict
 from collections import namedtuple
 from gensim.models import KeyedVectors
@@ -72,38 +73,73 @@ class Game:
         with open(HIST_FILE, 'r') as f:
             self.history = json.load(f)
 
-
     def score(self, word):
+        error_str = None
+        percentile = None
+        score = None
+        if word is not None and word != '':
+            try:
+                if word == self.word_to_guess:
+                    # with gensim rank of word with itself is 1 and similarity can be 0.99999994
+                    score = 1.0
+                    rank = 0
+                    self.solvers += 1
+                else:
+                    score = float(self.model.similarity(word, self.word_to_guess))
+                    top = {a:[b,c] for a,b,c in self.top(self.word_to_guess,1000)}
+                    if word in top.keys():
+                        percentile = top[word][0]
+                    else:
+                        percentile = None
+            except KeyError:
+                error_str = f'Je ne connais pas le mot <i>{word}</i>.'
+        else:
+            error_str = 'Je ne connais pas ce mot.'
+        return Score(error_str, self.day_num, percentile, score, self.solvers)
+    '''
+    def score(self, word):
+        perf1 = time.perf_counter()
         error_str = None
         percentile = None
         score = None
 
         if word is not None and word != '':
             try:
+                perf2 = time.perf_counter()
                 if word not in self.pool_attempt_set:
                     error_str = f'Je ne connais pas le mot <i>{word}</i>.'
                 else:
+                    perf3 = time.perf_counter()
                     if word == self.word_to_guess:
                         # with gensim rank of word with itself is 1 and similarity can be 0.99999994
                         score = 1.0
                         rank = 0
                         self.solvers += 1
                     else:
+                        perf4= time.perf_counter()
                         score = float(self.model.similarity(word, self.word_to_guess))
+                        perf5 = time.perf_counter()
                         top = {a:[b,c] for a,b,c in self.top(self.word_to_guess,1000)}
-                        print(top)
+                        perf6 = time.perf_counter()
                         if word in top.keys():
                             percentile = top[word][0]
                         else:
                             percentile = None
+                        perf7 = time.perf_counter()
             except KeyError:
                 error_str = f'Je ne connais pas le mot <i>{word}</i>.'
         else:
             error_str = 'Je ne connais pas ce mot.'
-
+        print(perf2-perf1,perf3-perf2,perf4-perf3,perf5-perf4,perf6-perf5,perf7-perf6)
         return Score(error_str, self.day_num, percentile, score, self.solvers)
-
-
+    '''
+    def top(self, word, topn):
+        result = []
+        top = self.model.most_similar(word, topn=topn)
+        for rank,w in enumerate([(word, 1.0), *top]):
+            result.append((w[0], 1000 - rank, float(w[1] * 100)))
+        return result
+    '''
     def top(self, word, topn):
         result = []
         top = self.model.most_similar(word, topn=10000)
@@ -115,8 +151,7 @@ class Game:
             if real_rank >= topn:
                 break
         return result
-
-
+    '''
     def nearby(self, word):
         if word == self.word_to_guess:
             result = self.top(word, 999)
